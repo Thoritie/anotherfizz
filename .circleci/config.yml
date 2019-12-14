@@ -10,7 +10,6 @@ jobs:
           root: .
           paths: .
 
-
   unit_tests:
     working_directory: ~/sayfizz
     docker:
@@ -22,6 +21,18 @@ jobs:
           name: Run unittest
           command: python fizzbuzztest.py
 
+  build_images:
+    working_directory: ~/sayfizz
+    docker:
+      - image: circleci/python:3.6.1
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: .
+      - run: |
+          docker build -t roseth/sayfizz:latest .
+          docker login -u roseth -p $DOCKER_PASS
+          docker push roseth/sayfizz:latest
 
 workflows:
   version: 2
@@ -31,3 +42,6 @@ workflows:
       - unit_tests:
           requires:
             - checkout_code
+      - build_image:
+          requires:
+            - unit_tests
